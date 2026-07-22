@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vab84 · pages</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Cdefs%3E%3ClinearGradient%20id='g'%20x1='0'%20y1='0'%20x2='1'%20y2='1'%3E%3Cstop%20offset='0'%20stop-color='%23a5232f'/%3E%3Cstop%20offset='1'%20stop-color='%236b1a20'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20x='2'%20y='2'%20width='28'%20height='28'%20rx='7'%20fill='%23050202'/%3E%3Crect%20x='2'%20y='2'%20width='28'%20height='28'%20rx='7'%20fill='none'%20stroke='url(%23g)'%20stroke-width='2.5'/%3E%3Ccircle%20cx='16'%20cy='16'%20r='6'%20fill='url(%23g)'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #050202;
+  --panel: #0b0405;
+  --panel-2: #110507;
+  --line: #2f0e12;
+  --line-strong: #6b1a20;
+  --ink: #f4e4e1;
+  --muted: #a67f7c;
+  --acc-1: #a5232f;
+  --acc-2: #c1454e;
+  --acc-grad: linear-gradient(120deg, var(--acc-1), var(--acc-2));
+  --deep-grad: linear-gradient(120deg, #9e2430, #58121a);
+  --glow-1: 0 0 7px color-mix(in srgb, var(--acc-1) 55%, transparent),
+            0 0 22px color-mix(in srgb, var(--acc-1) 20%, transparent);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f8f4f2; --panel: #ffffff; --panel-2: #f4e9e6; --line: #e9d2cd;
+    --line-strong: #d9aca4; --ink: #29100e; --muted: #8c6660;
+    --acc-1: #a11622; --acc-2: #ad3038;
+    --glow-1: 0 0 6px color-mix(in srgb, var(--acc-1) 30%, transparent),
+              0 0 18px color-mix(in srgb, var(--acc-1) 12%, transparent);
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f8f4f2; --panel: #ffffff; --panel-2: #f4e9e6; --line: #e9d2cd;
+  --line-strong: #d9aca4; --ink: #29100e; --muted: #8c6660;
+  --acc-1: #a11622; --acc-2: #ad3038;
+  --glow-1: 0 0 6px color-mix(in srgb, var(--acc-1) 30%, transparent),
+            0 0 18px color-mix(in srgb, var(--acc-1) 12%, transparent);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh;
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--acc-1) 6%, transparent), transparent 60%),
+    var(--bg);
+  color: var(--ink);
+  line-height: 1.65;
+  display: flex; flex-direction: column;
+}
+.wrap { width: 100%; max-width: 46rem; margin: 0 auto; padding: 4.5rem 1.4rem 3rem; flex: 1; }
+
+header { position: relative; margin-bottom: 2.6rem; }
+.brand {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  font-size: clamp(2rem, 6vw, 2.8rem); font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; margin: 0;
+  background: var(--deep-grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--acc-1) 32%, transparent));
+}
+.sub { margin: .5rem 0 0; color: var(--muted); font-size: 1.05rem; }
+.theme-toggle {
+  position: absolute; top: 0; right: 0;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--muted);
+  border-radius: 2px; width: 2rem; height: 2rem; font-size: 1rem; cursor: pointer; padding: 0;
+}
+.theme-toggle:hover { color: var(--acc-1); border-color: var(--acc-1); box-shadow: var(--glow-1); }
+
+.section-label {
+  font-family: ui-monospace, Consolas, monospace; font-size: .74rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .16em; color: var(--muted);
+  margin: 0 0 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--line);
+  position: relative;
+}
+.section-label::after {
+  content: ""; position: absolute; left: 0; bottom: -1px; width: 3rem; height: 2px;
+  background: var(--acc-grad); box-shadow: var(--glow-1);
+}
+
+.cards { display: grid; gap: 1rem; }
+a.card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--line-strong);
+  border-radius: 2px; padding: 1.15rem 1.3rem;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+a.card:hover {
+  border-color: var(--acc-1); border-top-color: var(--acc-1);
+  box-shadow: var(--glow-1); transform: translateY(-2px);
+}
+.card-title {
+  font-family: ui-monospace, Consolas, monospace; font-size: 1.15rem; font-weight: 700;
+  margin: 0; display: flex; align-items: baseline; gap: .6rem;
+}
+.card-title .name {
+  background: var(--acc-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.card-title .arrow { color: var(--acc-2); font-size: .9rem; margin-left: auto; }
+.card-desc { margin: .4rem 0 0; color: var(--muted); font-size: .96rem; }
+.card-url {
+  margin: .55rem 0 0; font-family: ui-monospace, Consolas, monospace; font-size: .78rem;
+  color: var(--acc-2); word-break: break-all;
+}
+
+footer {
+  border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem;
+  padding: 1.3rem 1.4rem; text-align: center;
+}
+footer a { color: var(--acc-2); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="brand">vab84</h1>
+    <p class="sub">Projects &amp; published pages.</p>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Dark / light">◐</button>
+  </header>
+
+  <p class="section-label">Pages</p>
+  <div class="cards">
+
+    <a class="card" href="https://vab84.github.io/boins/">
+      <p class="card-title"><span class="name">Boins Book</span><span class="arrow">→</span></p>
+      <p class="card-desc">The manual for Boins — a minimal, fast, S3-compatible blob storage for
+        the JVM. Bilingual (EN/RU): architecture, formats, deployment, recipes.</p>
+      <p class="card-url">vab84.github.io/boins</p>
+    </a>
+
+    <a class="card" href="https://vab84.github.io/timer-rg-privacy-policy/">
+      <p class="card-title"><span class="name">Timer RG — Privacy Policy</span><span class="arrow">→</span></p>
+      <p class="card-desc">Privacy policy for the Timer RG application.</p>
+      <p class="card-url">vab84.github.io/timer-rg-privacy-policy</p>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <a href="https://github.com/vab84">github.com/vab84</a>
+</footer>
+
+<script>
+function effectiveTheme() {
+  var forced = document.documentElement.getAttribute('data-theme');
+  if (forced) { return forced; }
+  return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+}
+function toggleTheme() {
+  var next = effectiveTheme() === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('vab84-theme', next); } catch (e) {}
+}
+(function () {
+  var t = null;
+  try { t = localStorage.getItem('vab84-theme'); } catch (e) {}
+  if (t === 'light' || t === 'dark') { document.documentElement.setAttribute('data-theme', t); }
+})();
+</script>
+</body>
+</html>
