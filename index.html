@@ -84,6 +84,8 @@
     display:flex; align-items:baseline; gap:.5rem;}
   .card-title .arrow{margin-left:auto; font-size:.9rem;}
   .card-desc{margin:.4rem 0 0; color:var(--ink);}
+  .card-desc code{background:color-mix(in srgb,var(--acc2) 14%,transparent); padding:.1em .4em;
+    border-radius:5px; font-family:ui-monospace,Consolas,monospace; font-size:.88em;}
   .card-url{margin:.5rem 0 0; font-family:ui-monospace,Consolas,monospace; font-size:.8rem;
     color:var(--muted); word-break:break-all;}
   .gh{margin:.1rem 0 0; font-size:.9rem;}
@@ -173,6 +175,18 @@
       к виду Linux — UTF-8, переводы строк LF, без BOM. Сама определяет кодировку (CP1251, CP866, KOI8-R,
       UTF-16), при сомнении делает резервную копию.</span></p>
     <p class="card-url">vabuter.github.io/win2nix</p>
+  </a>
+
+  <a class="card" href="https://vabuter.github.io/gswitch-auto/">
+    <p class="card-title">gswitch-auto <span class="arrow">→</span></p>
+    <p class="card-desc">
+      <span data-l="en">A fork of gswitch for Linux that automatically fixes words typed in the wrong keyboard
+      layout, Punto Switcher style (<code>ghbdtn</code> → <code>привет</code>). GNOME, Fedora and Debian,
+      Wayland and Xorg (RU).</span>
+      <span data-l="ru">Форк gswitch для Linux, который автоматически исправляет слова, набранные не в той
+      раскладке, как Punto Switcher (<code>ghbdtn</code> → <code>привет</code>). GNOME, Fedora и Debian,
+      Wayland и Xorg.</span></p>
+    <p class="card-url">vabuter.github.io/gswitch-auto</p>
   </a>
 
 </div>
