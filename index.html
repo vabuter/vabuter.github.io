@@ -37,205 +37,805 @@
     root.setAttribute("data-lang",lang);
     root.setAttribute("lang",lang);
     if(lang==="ru")document.title="Василий Бутер — проекты и страницы";
+    /* Extension (progressive enhancement): "js" shows the toggles only where they work;
+       "js-reveal" opts in to the one-shot entrance effects only where they can finish. */
+    root.className+=" js"+("IntersectionObserver" in window?" js-reveal":"");
   })();
 </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Fonts never block the first paint: the fitted name has metric-matched local stand-ins (see "Display fallbacks"). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wdth,wght@85..100,300..700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wdth,wght@85..100,300..700&display=swap"></noscript>
 <style>
-  :root{
-    --bg:#0b0e14; --panel:#121722; --line:#232b3d; --ink:#dbe2ee; --muted:#8b94a8;
-    --acc1:#5eead4; --acc2:#818cf8; --acc-grad:linear-gradient(120deg,var(--acc1),var(--acc2));
-  }
-  :root{color-scheme:dark;}
-  :root[data-theme="light"]{
+/* =====================================================================
+   SWISS EDITORIAL INDEX
+   0 display fallbacks · 1 tokens · 2 themes · 3 base · 4 header
+   5 masthead · 6 index · 7 figures · 8 motion · 9 print
+   ===================================================================== */
+
+/* ---------- 0. Display fallbacks --------------------------------------
+   The name is fitted to the measure from the advance widths of IBM Plex Sans (wdth 85, wght 620).
+   Until (or unless) Plex arrives, one of these local faces stands in with the same advance widths
+   (measured per script, minus 1 %) and the same baseline (Plex ascent 1.025 / descent .275,
+   divided by size-adjust because the overrides are scaled by it). So the name paints at once and
+   never re-wraps when the web font swaps in. A family whose local sources are missing is skipped. */
+@font-face{font-family:"VB Arial"; font-weight:700; unicode-range:U+0000-024F,U+2000-206F;
+  src:local("Arial Bold"),local("Arial-BoldMT"),local("Liberation Sans Bold"),local("LiberationSans-Bold"),local("Arimo Bold"),local("Arimo-Bold");
+  size-adjust:91%; ascent-override:112.6%; descent-override:30.2%;}
+@font-face{font-family:"VB Arial"; font-weight:700; unicode-range:U+0400-04FF;
+  src:local("Arial Bold"),local("Arial-BoldMT"),local("Liberation Sans Bold"),local("LiberationSans-Bold"),local("Arimo Bold"),local("Arimo-Bold");
+  size-adjust:89.7%; ascent-override:114.3%; descent-override:30.7%;}
+@font-face{font-family:"VB Roboto"; font-weight:700; unicode-range:U+0000-024F,U+2000-206F;
+  src:local("Roboto Bold"),local("Roboto-Bold"); size-adjust:95.3%; ascent-override:107.6%; descent-override:28.9%;}
+@font-face{font-family:"VB Roboto"; font-weight:700; unicode-range:U+0400-04FF;
+  src:local("Roboto Bold"),local("Roboto-Bold"); size-adjust:97.4%; ascent-override:105.2%; descent-override:28.2%;}
+@font-face{font-family:"VB Noto"; font-weight:700; unicode-range:U+0000-024F,U+2000-206F;
+  src:local("Noto Sans Bold"),local("NotoSans-Bold"); size-adjust:86.1%; ascent-override:119%; descent-override:31.9%;}
+@font-face{font-family:"VB Noto"; font-weight:700; unicode-range:U+0400-04FF;
+  src:local("Noto Sans Bold"),local("NotoSans-Bold"); size-adjust:87.9%; ascent-override:116.6%; descent-override:31.3%;}
+
+/* ---------- 1. Tokens ------------------------------------------------ */
+:root{
+  /* Type: one grotesk (variable width + weight), one mono weight for metadata */
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --display:"IBM Plex Sans","VB Arial","VB Roboto","VB Noto",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+  --cond:85%;                                      /* display width axis */
+
+  --fs-cap:.75rem;                                 /* 12px mono labels   */
+  --fs-meta:.8125rem;                              /* 13px mono captions */
+  --fs-body:clamp(1rem,.95rem + .2vw,1.0625rem);   /* 16 → 17px          */
+  --fs-lede:clamp(1.0625rem,.98rem + .35vw,1.3125rem);
+  --fs-title:clamp(1.75rem,1.1rem + 1.9vw,3.1rem);
+
+  /* Grid */
+  --gutter:clamp(1rem,.4rem + 3vw,3.5rem);         /* 16px at 320 → 56px */
+  --gap:clamp(.75rem,.5rem + 1vw,1.5rem);
+  --max:100rem;
+  --name-gap:clamp(.55rem,.4rem + .5vw,.9rem);     /* name → rule */
+
+  /* Space scale (4px base) */
+  --s1:.25rem; --s2:.5rem; --s3:.75rem; --s4:1rem; --s5:1.5rem; --s6:2rem; --s7:3rem; --s8:4.5rem;
+
+  /* Shape */
+  --radius:2px;
+
+  /* Motion */
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-io:cubic-bezier(.75,0,.2,1);
+  --t-fast:.2s; --t-mid:.5s; --t-slow:1.1s;
+
+  /* Arrow glyphs used as masks (one source of truth for every row) */
+  --arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M3 16h25M19 7l9 9-9 9'/%3E%3C/svg%3E");
+  --arrow-ext:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none' stroke='%23000' stroke-width='2'%3E%3Cpath d='M7 25L24 8M11 8h13v13'/%3E%3C/svg%3E");
+
+  /* Paper grain tiles (feTurbulence): light specks for ink, dark specks for paper */
+  --grain-ink:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 -.18'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-paper:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 -.18'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- 2. Themes ------------------------------------------------ */
+/* Dark ("ink") is the no-JS default, as on the current site.
+   One accent (electric indigo); the old teal→indigo brand gradient survives in the full stop and the row wash. */
+:root{
+  color-scheme:dark;
+  --bg:#0d0d10;
+  --ink:#ecebe6;        /* 16.3:1 */
+  --ink-2:#c4c2bc;      /* 10.9:1 */
+  --muted:#8f8d89;      /*  5.8:1 */
+  --rule:#2b2b30;
+  --rule-strong:#ecebe6;
+  --accent:#8f95ff;     /*  7.3:1 — text, lines, focus */
+  --stop:#5d63ff;       /* saturated fill for the full stop and figure accents */
+  --brand:linear-gradient(135deg,#5eead4 8%,#5d63ff 78%);   /* teal → indigo, as in the favicon */
+  --wash-a:#132021; --wash-b:#1c1c2d;                        /* teal tint → indigo tint */
+  --code-bg:rgba(143,149,255,.13);
+  --icon-rot:0deg;
+  --grain-a:.18;
+  --grain:var(--grain-ink);
+  --halo:#111114;       /* the paper as the grain leaves it on average (measured), for the name's knock-out halo */
+  /* figures: tinted plates with hairline drawings; far2l stays graphite in both themes */
+  --plate:#17171c; --fig:#a3a19c; --fig-2:#5a595f;
+  --win:#232326; --win-edge:#3a3a40; --win-line:#4b4b52; --win-text:#8d8d94;
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f3f2ec; --ink:#121216; --ink-2:#3a3a42; --muted:#5d5d66;
+  --rule:#cdccc5; --rule-strong:#121216;
+  --accent:#2b33ff; --stop:#2b33ff; --brand:linear-gradient(135deg,#0e9f8a 8%,#2b33ff 78%);
+  --wash-a:#e0ebe5; --wash-b:#e3e3f0;
+  --code-bg:rgba(43,51,255,.08); --icon-rot:180deg; --grain-a:.14;
+  --grain:var(--grain-paper); --halo:#f0efe9;
+  --plate:#e8e7e0; --fig:#4e4e56; --fig-2:#a9a8a1;
+  --win:#232326; --win-edge:#232326; --win-line:#45454c; --win-text:#9a9aa1;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme]){
     color-scheme:light;
-    --bg:#f6f8fb; --panel:#fff; --line:#dde3ee; --ink:#1a2030; --muted:#5c6577; --acc1:#0e9f8a; --acc2:#5a63e8;
+    --bg:#f3f2ec; --ink:#121216; --ink-2:#3a3a42; --muted:#5d5d66;
+    --rule:#cdccc5; --rule-strong:#121216;
+    --accent:#2b33ff; --stop:#2b33ff; --brand:linear-gradient(135deg,#0e9f8a 8%,#2b33ff 78%);
+    --wash-a:#e0ebe5; --wash-b:#e3e3f0;
+    --code-bg:rgba(43,51,255,.08); --icon-rot:180deg; --grain-a:.14;
+    --grain:var(--grain-paper); --halo:#f0efe9;
+    --plate:#e8e7e0; --fig:#4e4e56; --fig-2:#a9a8a1;
+    --win:#232326; --win-edge:#232326; --win-line:#45454c; --win-text:#9a9aa1;
   }
-  @media (prefers-color-scheme:light){
-    :root:not([data-theme]){
-      color-scheme:light;
-      --bg:#f6f8fb; --panel:#fff; --line:#dde3ee; --ink:#1a2030; --muted:#5c6577; --acc1:#0e9f8a; --acc2:#5a63e8;
-    }
-  }
-  *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); color:var(--ink); line-height:1.7;
-    font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Arial,sans-serif;}
-  .wrap{max-width:44rem; margin:0 auto; padding:2.4rem 1.3rem 4rem;}
-  header{border-bottom:1px solid var(--line); padding-bottom:1.1rem; margin-bottom:1.6rem;
-    display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;}
-  :root[data-lang="en"] [data-l="ru"], :root[data-lang="ru"] [data-l="en"]{display:none;}
-  .tools{flex:none; display:flex; gap:.5rem;}
-  .lang-toggle{font:inherit; font-size:.8rem; font-weight:700; letter-spacing:.04em;}
-  .theme-toggle{flex:none; width:2.4rem; height:2.4rem; padding:0; cursor:pointer;
-    display:grid; place-items:center; color:var(--acc2);
-    background:var(--panel); border:1px solid var(--line); border-radius:10px;
-    transition:border-color .15s ease;}
-  .theme-toggle:hover{border-color:var(--acc2);}
-  .theme-toggle:focus-visible{outline:2px solid var(--acc2); outline-offset:2px;}
-  .theme-toggle svg{width:1.2rem; height:1.2rem; fill:none; stroke:currentColor; stroke-width:2;
-    stroke-linecap:round; stroke-linejoin:round;}
-  .theme-toggle .sun{display:none;}
-  :root[data-theme="light"] .theme-toggle .sun{display:block;}
-  :root[data-theme="light"] .theme-toggle .moon{display:none;}
-  h1{font-size:1.9rem; font-weight:800; letter-spacing:-.02em; margin:0;
-    background:var(--acc-grad); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .sub{color:var(--muted); font-size:.95rem; margin:.35rem 0 0;}
-  .label{font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em;
-    color:var(--muted); margin:0 0 1rem;}
-  .cards{display:grid; gap:1rem;}
-  .card{display:block; position:relative; text-decoration:none; color:inherit;
-    background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--acc1);
-    border-radius:0 12px 12px 0; padding:1rem 1.2rem;
-    transition:border-color .15s ease, transform .15s ease;}
-  .card:hover{border-color:var(--acc2); border-left-color:var(--acc2); transform:translateY(-2px);}
-  .card-link{color:inherit; text-decoration:none;}
-  .card-link::after{content:""; position:absolute; inset:0;}
-  .card-store{margin:.6rem 0 0; font-size:.9rem; font-weight:600;}
-  .card-store a{position:relative; z-index:1; color:var(--acc2);}
-  .card-title{font-size:1.15rem; font-weight:700; margin:0; color:var(--acc2);
-    display:flex; align-items:baseline; gap:.5rem;}
-  .card-title .arrow{margin-left:auto; font-size:.9rem;}
-  .card-desc{margin:.4rem 0 0; color:var(--ink);}
-  .card-desc code{background:color-mix(in srgb,var(--acc2) 14%,transparent); padding:.1em .4em;
-    border-radius:5px; font-family:ui-monospace,Consolas,monospace; font-size:.88em;}
-  .card-url{margin:.5rem 0 0; font-family:ui-monospace,Consolas,monospace; font-size:.8rem;
-    color:var(--muted); word-break:break-all;}
-  .gh{margin:.1rem 0 0; font-size:.9rem;}
-  .gh a{color:var(--acc2);}
-  header > div:first-child{min-width:0;}
-  @media (max-width:30rem){
-    .wrap{padding:1.6rem 1rem 3rem;}
-    h1{font-size:1.55rem;}
-    .sub{font-size:.9rem;}
-    .card{padding:.85rem 1rem;}
-    .card-title{font-size:1.05rem;}
-  }
+}
+
+/* ---------- 3. Base -------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box;}
+html{background:var(--bg); -webkit-text-size-adjust:100%; text-size-adjust:100%; scroll-padding-top:5.5rem;}
+body{
+  margin:0; position:relative; min-height:100vh; overflow-x:clip;
+  color:var(--ink); font-family:var(--sans); font-size:var(--fs-body); line-height:1.55;
+  font-kerning:normal; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+/* Paper grain: one static tile over the whole document, under the content. */
+body::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:var(--grain); background-size:220px; opacity:var(--grain-a);
+}
+:root[data-lang="en"] [data-l="ru"], :root[data-lang="ru"] [data-l="en"]{display:none;}
+a{color:inherit;}
+::selection{background:var(--accent); color:var(--bg);}
+:focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
+.nw{white-space:nowrap;}
+.vh{position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;}
+.wrap{width:100%; max-width:calc(var(--max) + 2 * var(--gutter)); margin-inline:auto; padding-inline:var(--gutter);}
+
+.skip{position:absolute; left:var(--gutter); top:-4rem; z-index:30; padding:.6rem .9rem;
+  background:var(--ink); color:var(--bg); font:500 var(--fs-meta)/1 var(--mono); text-decoration:none;}
+.skip:focus{top:.75rem;}
+
+/* ---------- 4. Header ------------------------------------------------ */
+/* A slim sticky bar: imprint left, controls right, running head in between once the name has scrolled away.
+   Opaque (no backdrop blur): nothing needs to show through a 1px-ruled paper strip. */
+.site-head{position:sticky; top:0; z-index:20; border-bottom:1px solid var(--rule); background:var(--bg);}
+/* the bar carries the same paper grain as the page */
+.site-head::before{content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background-image:var(--grain); background-size:220px; opacity:var(--grain-a);}
+.bar{position:relative; display:flex; align-items:center; justify-content:space-between; gap:var(--s4); min-height:4.25rem;}
+.runhead{display:none; position:absolute; left:50%; top:50%; margin:0; white-space:nowrap; pointer-events:none;
+  font-family:var(--display); font-size:1.0625rem; font-weight:620; font-stretch:var(--cond); line-height:1; letter-spacing:-.02em;
+  opacity:0; visibility:hidden; transform:translate(-50%,10%);
+  transition:opacity .3s ease, transform .5s var(--ease-out), visibility 0s linear .5s;}
+.runhead .stop{animation:none;}
+.is-past-hero .runhead{opacity:1; visibility:visible; transform:translate(-50%,-50%);
+  transition:opacity .3s ease, transform .5s var(--ease-out), visibility 0s;}
+@media (min-width:48em){ .runhead{display:block;} }
+
+/* GitHub imprint: brand square + mono URL + an underline that draws in */
+.gh{position:relative; display:inline-flex; align-items:center; gap:.6rem; min-width:0;
+  padding-block:.8rem; font:500 .8125rem/1 var(--mono); letter-spacing:.01em; text-decoration:none;}
+.gh-mark{flex:none; width:.7rem; height:.7rem; background:var(--stop); background-image:var(--brand);}
+.gh-arrow{flex:none; width:.7rem; height:.7rem; color:var(--muted); transition:transform var(--t-mid) var(--ease-out), color var(--t-fast);}
+.gh-text{position:relative; white-space:nowrap;}
+.gh-text::after{content:""; position:absolute; left:0; right:0; bottom:-.35rem; height:1px; background:currentColor;
+  transform:scaleX(0); transform-origin:100% 50%; transition:transform var(--t-mid) var(--ease-io);}
+.gh:hover .gh-text::after, .gh:focus-visible .gh-text::after{transform:scaleX(1); transform-origin:0 50%;}
+.gh:hover .gh-arrow, .gh:focus-visible .gh-arrow{color:var(--accent); transform:translate(2px,-2px);}
+
+.tools{flex:none; display:flex; gap:.5rem;}
+/* without JavaScript the toggles could not work, so they are not offered (content stays complete) */
+:root:not(.js) .tools{display:none;}
+.tool{position:relative; height:2.75rem; min-width:2.75rem; margin:0; padding:0; cursor:pointer;
+  color:var(--ink); background:transparent; border:1px solid var(--rule); border-radius:var(--radius);
+  font:inherit; transition:border-color var(--t-fast), transform var(--t-fast);}
+.tool:hover{border-color:var(--ink);}
+.tool:active{transform:scale(.95);}
+
+/* Language: segmented EN|RU with a sliding ink block under the active code.
+   It is one button for assistive tech; for the pointer only the inactive half acts (see the script). */
+.lang-toggle{display:inline-grid; grid-auto-flow:column; grid-auto-columns:1fr; min-width:4.5rem; padding:3px;}
+.lang-toggle::before{content:""; position:absolute; top:3px; bottom:3px; left:3px; width:calc(50% - 3px);
+  background:var(--ink); border-radius:1px; transition:transform var(--t-mid) var(--ease-io);}
+:root[data-lang="ru"] .lang-toggle::before{transform:translateX(100%);}
+.lang-opt{position:relative; display:grid; place-items:center; border-radius:1px; font:500 var(--fs-meta)/1 var(--mono);
+  letter-spacing:.06em; transition:color var(--t-fast);}
+/* the active code also carries the ink fill (keeps contrast measurable at rest) and is not a target */
+:root[data-lang="en"] .lang-opt[data-c="en"], :root[data-lang="ru"] .lang-opt[data-c="ru"]{color:var(--bg); background-color:var(--ink); cursor:default;}
+:root[data-lang="en"] .lang-opt[data-c="ru"]:hover, :root[data-lang="ru"] .lang-opt[data-c="en"]:hover{color:var(--accent);}
+/* only while the language changes: text colours cross over, the fill waits for the slider to arrive */
+.lang-anim .lang-opt{transition:color var(--t-mid) var(--ease-io), background-color 0s;}
+:root.lang-anim[data-lang="en"] .lang-opt[data-c="en"], :root.lang-anim[data-lang="ru"] .lang-opt[data-c="ru"]{
+  transition:color var(--t-mid) var(--ease-io), background-color 0s linear var(--t-mid);}
+/* forced colours drop background fills, so the active code is marked with the system highlight instead */
+@media (forced-colors:active){
+  .lang-toggle::before{display:none;}
+  :root[data-lang="en"] .lang-opt[data-c="en"], :root[data-lang="ru"] .lang-opt[data-c="ru"]{
+    forced-color-adjust:none; background:Highlight; color:HighlightText;}
+}
+
+/* Theme: a half-filled disc that turns over */
+.theme-toggle svg{display:block; width:1.25rem; height:1.25rem; margin:auto; transform:rotate(var(--icon-rot));
+  transition:transform .7s var(--ease-io);}
+.theme-toggle circle{fill:none; stroke:currentColor; stroke-width:1.5;}
+.theme-toggle path{fill:currentColor;}
+
+/* ---------- 5. Masthead ---------------------------------------------- */
+/* A modest masthead: the name on one line at a moderate size, the subtitle under a rule, then straight to the index.
+   --cap is a JS safety net: the largest size that fits in the font in use; it only binds for an unexpected font. */
+.hero{padding-top:clamp(1.75rem,1rem + 2.5vw,3.25rem);}
+.name{
+  display:flow-root;   /* box = its line boxes: the entrance clip is measured from it */
+  /* optical margin: Cyrillic "В" has a wide side bearing, Latin "V" almost none */
+  margin:0 0 0 -.06em; font-family:var(--display); font-weight:620; font-stretch:var(--cond);
+  line-height:.8; letter-spacing:-.04em;
+  /* descenders knock the rule out instead of colliding with it: a paper-coloured halo painted under the glyphs.
+     (The rule is .sub's border, painted before all text — so .sub itself must never become a stacking context.) */
+  text-shadow:.035em 0 var(--halo), -.035em 0 var(--halo), 0 .035em var(--halo), 0 -.035em var(--halo);
+  font-size:min(var(--cap,20rem),clamp(2.25rem,1.6rem + 2.2vw,3.75rem));   /* 36px at 320 → 60px wide */
+}
+:root[data-lang="en"] .name{margin-left:-.02em;}
+.name::selection, .name *::selection{text-shadow:none;}
+.name .w{display:inline-block; vertical-align:top;}
+/* per-word entrance mask (keeps line 1 out of line 2 on phones): room for descenders and side bearings */
+.w{overflow:hidden; padding:.05em .08em .22em; margin:-.05em -.08em -.22em;}
+.wi{display:inline-block; white-space:nowrap;}
+/* the full stop: a square in the teal → indigo brand gradient */
+.stop{display:inline-block; width:.16em; height:.16em; margin-left:.045em; background:var(--stop); background-image:var(--brand);}
+.sub{display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); column-gap:var(--gap);
+  margin:var(--name-gap) 0 0; padding-top:clamp(.6rem,.5rem + .4vw,.9rem);
+  border-top:2px solid var(--rule-strong);
+  font-size:var(--fs-lede); font-weight:400; line-height:1.3; letter-spacing:-.005em; color:var(--ink-2);}
+.sub > span{grid-column:1 / -1; text-wrap:balance;}
+
+/* ---------- 6. Index ------------------------------------------------- */
+/* The total is a CSS counter read after the list (so it needs no script) and placed beside the label by the grid. */
+.index-sec{display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:.5rem; align-items:start;
+  padding-top:clamp(2.25rem,1.5rem + 2.5vw,4rem); padding-bottom:clamp(4rem,2.5rem + 7vw,9rem);}
+.index-sec:focus{outline:none;}
+.index-label{grid-row:1; grid-column:1; margin:0; padding-bottom:var(--s3);
+  font:500 var(--fs-cap)/1 var(--mono); letter-spacing:.14em; text-transform:uppercase;}
+.index-count{grid-row:1; grid-column:2; font:500 .6875rem/1 var(--mono); letter-spacing:.06em; color:var(--accent); transform:translateY(-.3em);}
+.index-count::before{content:"(" counter(entry,decimal-leading-zero) ")";}
+
+.index{grid-row:2; grid-column:1 / -1; list-style:none; margin:0; padding:0; counter-reset:entry;
+  border-top:1px solid var(--rule-strong); border-bottom:1px solid var(--rule-strong);}
+
+/* One row of the index. Mobile first: number · figure · arrow, then a single column. */
+.entry{position:relative; z-index:0; counter-increment:entry;
+  display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:var(--gap); align-items:start;
+  padding-block:clamp(1.25rem,.9rem + 1.4vw,2.25rem);}
+.entry + .entry::before{content:""; position:absolute; left:0; right:0; top:0; height:1px;
+  background:var(--rule); transform-origin:0 50%; transition:transform 1.2s var(--ease-out);}
+/* accent wash (behind the text, bleeding into the gutters): the brand gradient as a faint tint */
+.entry::after{content:""; position:absolute; z-index:-1; inset:0 calc(-1 * var(--gutter));
+  background:var(--wash-b); background-image:linear-gradient(90deg,var(--wash-a),var(--wash-b) 70%);
+  transform:scaleX(0); transform-origin:0 50%; transition:transform .6s var(--ease-io);}
+
+/* "01 —": the number with a tick that extends when the row is engaged */
+.entry-num{grid-column:1; grid-row:1; align-self:center; display:flex; align-items:center; gap:.55rem;
+  font:500 .8125rem/1 var(--mono); letter-spacing:.04em; color:var(--ink-2);
+  transition:color var(--t-fast), opacity .8s var(--ease-out), transform .8s var(--ease-out);}
+.entry-num::before{content:counter(entry,decimal-leading-zero);}
+.entry-num::after{content:""; flex:none; width:1.6rem; height:1px; background:currentColor;
+  transform:scaleX(.4); transform-origin:0 50%; transition:transform .6s var(--ease-io);}
+
+.entry-arrow{grid-column:3; grid-row:1; align-self:center; position:relative; display:block; width:1.75rem; height:1.75rem;
+  overflow:hidden; color:var(--ink); font:400 1.25rem/1.75rem var(--sans); text-align:center;
+  transition:color var(--t-fast), opacity .8s var(--ease-out), transform .8s var(--ease-out);}
+
+.entry-title{grid-column:1 / -1; grid-row:2; margin:var(--s4) 0 0;
+  font-size:var(--fs-title); font-weight:540; font-stretch:var(--cond); line-height:1; letter-spacing:-.02em;}
+.entry-link{display:block; text-decoration:none;}
+.entry-link::after{content:""; position:absolute; z-index:1; inset:0 calc(-1 * var(--gutter));}
+.entry-link:focus-visible{outline:none;}
+.entry-link:focus-visible::after{outline:2px solid var(--accent); outline-offset:-2px;}
+/* the hover "weight gain" is drawn with a hairline shadow, so the advance widths (and line breaks) never change */
+.t{display:block; text-wrap:balance; text-shadow:0 0 0 transparent;
+  transition:transform .65s var(--ease-out), text-shadow .45s var(--ease-out), color var(--t-fast);}
+.chip{display:inline-block; margin-left:.3em; padding:.32em .45em .26em; vertical-align:.95em;
+  border:1px solid currentColor; border-radius:var(--radius); text-shadow:none;
+  font:500 var(--fs-cap)/1 var(--mono); font-stretch:100%; letter-spacing:.06em; color:var(--muted);
+  transition:color var(--t-fast);}
+
+/* description + secondary link: separate grid items on phones and tablets, one column block on desktop */
+.entry-text{display:contents;}
+.entry-desc{grid-column:1 / -1; grid-row:3; margin:var(--s3) 0 0; max-width:36em; color:var(--ink-2);
+  text-wrap:pretty; hyphens:manual;
+  transition:opacity .8s var(--ease-out) .08s, transform .9s var(--ease-out) .08s;}
+.entry-desc code{font-family:var(--mono); font-weight:500; font-size:.84em; padding:.06em .26em; border-radius:var(--radius);
+  background:var(--code-bg); color:var(--ink);}
+
+.entry-meta{grid-column:1 / -1; grid-row:4; display:flex; flex-wrap:wrap; gap:.35rem 1.5rem; margin:var(--s4) 0 0;
+  transition:opacity .8s var(--ease-out) .14s, transform .9s var(--ease-out) .14s;}
+.entry-meta div{display:flex; align-items:baseline; gap:.5rem;}
+.entry-meta dt{font:500 var(--fs-cap)/1.3 var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted);}
+.entry-meta dd{margin:0; font-size:.9375rem; line-height:1.35; color:var(--ink);}
+/* Several values: the dot separates values on the same line only. Each value carries its dot in front; the row is
+   shifted one dot-width left and that strip is clipped, so a value that opens a line never shows a stray "·". */
+.vals{display:flex; flex-wrap:wrap; margin-left:-1em; clip-path:inset(-.5em -.5em -.5em 1em);}
+.vals > span{white-space:nowrap;}
+.vals > span::before{content:"·"; content:"·" / ""; display:inline-block; width:1em; text-align:center; color:var(--muted);}
+
+/* where the click goes: host and path in mono, the last segment in full ink */
+.entry-url{grid-column:1 / -1; grid-row:5; margin:var(--s2) 0 0; font:500 var(--fs-meta)/1.4 var(--mono);
+  color:var(--muted); overflow-wrap:anywhere;
+  transition:opacity .8s var(--ease-out) .18s, transform .9s var(--ease-out) .18s;}
+.entry-url b{font-weight:inherit; color:var(--ink);}
+
+/* Secondary link (Timer RG privacy policy): raised above the stretched link. No ancestor up to the row may become
+   a stacking context (its z-index would then lose to the stretched link), so the row reveal moves the link itself. */
+.entry-extra{grid-column:1 / -1; grid-row:6; margin:var(--s4) 0 0;}
+.entry-sub{position:relative; z-index:2; display:inline-flex; align-items:center; gap:.45rem;
+  padding-block:.4rem; margin-block:-.4rem; font-size:.9375rem; font-weight:500; text-decoration:none;
+  transition:color var(--t-fast), transform .9s var(--ease-out) .2s;}
+/* underline the label only: in an inline-flex link each item gets its own piece */
+.entry-sub > [data-l]{text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:.3em;
+  text-decoration-color:var(--muted); transition:text-decoration-color var(--t-fast);}
+.entry-sub:hover{color:var(--accent);}
+.entry-sub:hover > [data-l]{text-decoration-color:currentColor; text-decoration-thickness:2px;}
+.entry-sub .sa{display:inline-block; transition:transform var(--t-mid) var(--ease-out);}
+.entry-sub:hover .sa{transform:translateX(3px);}
+
+/* Figure plate: on phones a small thumbnail on the number line */
+.entry-fig{grid-column:2; grid-row:1; align-self:center; justify-self:end; display:block; width:5.5rem; aspect-ratio:176 / 80;
+  background:var(--plate); transition:opacity .8s var(--ease-out) .1s, transform .9s var(--ease-out) .1s;}
+
+/* Arrows as masks: two copies, one leaves while the other arrives. */
+@supports ((-webkit-mask-image:url("")) or (mask-image:url(""))){
+  .entry-arrow{font-size:0; color:var(--ink);}
+  .entry-arrow::before, .entry-arrow::after{content:""; position:absolute; inset:0; background:currentColor;
+    -webkit-mask:var(--arrow) center / 100% no-repeat; mask:var(--arrow) center / 100% no-repeat;
+    transition:transform .6s var(--ease-io);}
+  .entry-arrow::after{transform:translateX(-110%);}
+  .entry-arrow.ext::before, .entry-arrow.ext::after{-webkit-mask-image:var(--arrow-ext); mask-image:var(--arrow-ext);}
+  .entry-arrow.ext::after{transform:translate(-110%,110%);}
+}
+
+/* The row comes alive: hover (fine pointers), keyboard focus and deep links (/#win2nix). */
+@media (hover:hover){
+  .entry:hover::after{transform:scaleX(1);}
+  .entry:hover .t{transform:translateX(.22em); color:var(--accent); text-shadow:.012em 0 0 currentColor, -.012em 0 0 currentColor;}
+  .entry:hover .entry-num, .entry:hover .entry-arrow, .entry:hover .chip{color:var(--accent);}
+  .entry:hover .entry-num::after{transform:none;}
+  .entry:hover .entry-arrow::before{transform:translateX(110%);}
+  .entry:hover .entry-arrow.ext::before{transform:translate(110%,-110%);}
+  .entry:hover .entry-arrow::after{transform:none;}
+  .entry:hover .fig .mv{transform:var(--mv);}
+  /* hovering the secondary link returns the row to rest */
+  .entry:has(.entry-sub:hover)::after{transform:scaleX(0);}
+  .entry:has(.entry-sub:hover) .t{transform:none; color:inherit; text-shadow:0 0 0 transparent;}
+  .entry:has(.entry-sub:hover) .entry-num{color:var(--ink-2);}
+  .entry:has(.entry-sub:hover) .entry-num::after{transform:scaleX(.4);}
+  .entry:has(.entry-sub:hover) .chip{color:var(--muted);}
+  .entry:has(.entry-sub:hover) .entry-arrow{color:var(--ink);}
+  .entry:has(.entry-sub:hover) .fig .mv{transform:none;}
+  .entry:has(.entry-sub:hover) .entry-arrow::before{transform:none;}
+  .entry:has(.entry-sub:hover) .entry-arrow::after{transform:translateX(-110%);}
+  .entry:has(.entry-sub:hover) .entry-arrow.ext::after{transform:translate(-110%,110%);}
+}
+.entry:has(.entry-link:focus-visible)::after, .entry:target::after{transform:scaleX(1);}
+.entry:has(.entry-link:focus-visible) .t{transform:translateX(.22em); color:var(--accent); text-shadow:.012em 0 0 currentColor, -.012em 0 0 currentColor;}
+.entry:has(.entry-link:focus-visible) :is(.entry-num,.entry-arrow,.chip){color:var(--accent);}
+.entry:has(.entry-link:focus-visible) .entry-num::after{transform:none;}
+.entry:has(.entry-link:focus-visible) .fig .mv{transform:var(--mv);}
+@supports not selector(:has(*)){
+  .entry:focus-within::after{transform:scaleX(1);}
+  .entry:focus-within .t{color:var(--accent);}
+}
+.entry:active::after{transform:scaleX(1); transition-duration:.25s;}
+.entry:has(.entry-sub:active)::after{transform:scaleX(0);}   /* pressing the secondary link does not press the row */
+
+/* Tablet: 8 columns — title and figure on the number line; description beside the meta. */
+@media (min-width:40em){
+  .entry{grid-template-columns:repeat(8,minmax(0,1fr));}
+  .entry-num{grid-column:1; grid-row:1; align-self:start; padding-top:.55rem;}
+  .entry-title{grid-column:2 / span 4; grid-row:1; margin:0;}
+  /* the figure heads the meta column, one title line tall (the arrow too, at most): the title alone sets row 1 */
+  .entry-fig{grid-column:6 / span 2; grid-row:1; align-self:start; justify-self:start; width:calc(var(--fs-title) * 176 / 80);}
+  .entry-arrow{grid-column:8; grid-row:1; align-self:start; justify-self:end; width:min(2rem,var(--fs-title)); height:min(2rem,var(--fs-title));}
+  .entry-desc{grid-column:2 / span 4; grid-row:2; margin-top:var(--s4);}
+  .entry-url{grid-column:2 / span 4; grid-row:3; margin-top:var(--s3);}
+  .entry-extra{grid-column:2 / span 4; grid-row:4; margin-top:var(--s4);}
+  .entry-meta{grid-column:6 / span 3; grid-row:2 / span 3; display:grid; gap:var(--s3); align-content:start; margin-top:1.3rem;}
+  .entry-meta div{display:grid; gap:.3rem;}
+}
+/* Desktop: 12 columns — number | title + destination + figure | description | meta | arrow. */
+@media (min-width:72em){
+  /* the figure takes the room left under title + destination and ends level with the text column */
+  .entry{grid-template-columns:repeat(12,minmax(0,1fr)); grid-template-rows:auto auto 1fr;}
+  .entry-title{grid-column:2 / span 4; grid-row:1;}
+  .entry-url{grid-column:2 / span 4; grid-row:2; align-self:start; margin-top:1rem;}
+  .entry-fig{grid-column:2 / span 4; grid-row:3; align-self:end; width:11rem; margin-top:var(--s5);}
+  .entry-text{display:block; grid-column:6 / span 4; grid-row:1 / span 3;}
+  .entry-desc{margin-top:.4rem;}
+  .entry-meta{grid-column:10 / span 2; grid-row:1 / span 3; margin-top:.55rem;}
+  .entry-arrow{grid-column:12; grid-row:1;}
+}
+@media (max-width:22.5em){
+  .gh{font-size:.75rem; gap:.5rem;}
+  .gh-arrow{display:none;}
+  .tools{gap:.375rem;}
+  .entry-fig{width:4.75rem;}
+}
+
+/* ---------- 7. Figures ----------------------------------------------- */
+/* Manual-style plates: 1px drawings (at any scale) in ink, one accent square per figure — the full stop again.
+   The accent part (.mv) moves a step when its row is engaged. Each figure is optional. */
+.fig{display:block; width:100%; height:100%; overflow:visible; fill:none; stroke:currentColor; stroke-width:1; color:var(--fig);}
+.fig *{vector-effect:non-scaling-stroke;}
+.fig .d{stroke:var(--fig-2);}
+.fig .p{stroke-width:2;}
+.fig .f{fill:currentColor; stroke:none;}
+.fig .a{fill:var(--stop); stroke:none;}
+.fig .ac{stroke:var(--plate);}
+.fig .win{fill:var(--win); stroke:var(--win-edge);}
+.fig .wl{stroke:var(--win-line);}
+.fig .wt{stroke:var(--win-text);}
+.fig .aw{stroke:var(--win);}
+.fig .mv{transition:transform .7s var(--ease-io); transform-box:fill-box; transform-origin:center;}
+
+/* ---------- 8. Motion (progressive, one-shot) ------------------------ */
+@media (prefers-reduced-motion:no-preference){
+  /* Masthead, once (.is-entered retires it). The rule is the horizon: the name is clipped at it and rises out of it;
+     once landed, the edge drops and the descenders reach through. No font wait: the fallback has the same metrics. */
+  .js-reveal:not(.is-entered) .name{animation:horizon 1.15s both;}
+  .js-reveal:not(.is-entered) .wi{animation:rise 1.05s var(--ease-out) .05s both;}
+  .js-reveal:not(.is-entered) .w + .w .wi{animation-delay:.13s;}
+  /* the full stop lands, blinks twice like a block cursor, then rests as a period */
+  .js-reveal:not(.is-entered) .name .stop{animation:land .7s var(--ease-out) .6s both, blink .8s steps(1,end) 1.4s 2;}
+  .js-reveal:not(.is-entered) .sub > span{animation:slide .9s var(--ease-out) .3s both;}   /* the text, not .sub: its rule must stay put */
+  /* index rows: rule draws across, text settles; links never fade */
+  .js-reveal .entry:not(.is-in)::before{transform:scaleX(0);}
+  .js-reveal .entry:not(.is-in) .t{transform:translateY(.4em);}
+  .js-reveal .entry:not(.is-in) :is(.entry-num,.entry-arrow,.entry-desc,.entry-meta,.entry-url,.entry-fig){opacity:0; transform:translateY(.9rem);}
+  .js-reveal .entry:not(.is-in) .entry-sub{transform:translateY(.9rem);}
+  /* failsafe: if the observer script never ran, show everything anyway */
+  .js-reveal:not([data-io]) .entry:not(.is-in) :is(.t,.entry-num,.entry-arrow,.entry-desc,.entry-meta,.entry-url,.entry-sub,.entry-fig){
+    animation:unveil .6s var(--ease-out) 2.5s both;}
+}
+@keyframes unveil{to{opacity:1; transform:none;}}
+/* clip edge on the rule (1px above, clear of the pixel-snapped border), then below the descenders */
+@keyframes horizon{
+  from,55%{clip-path:inset(-.5em -.5em calc(1px - var(--name-gap))); animation-timing-function:cubic-bezier(.4,0,.2,1);}
+  to{clip-path:inset(-.5em -.5em -.4em);}
+}
+/* each word starts wholly below its edge */
+@keyframes rise{from{transform:translateY(calc(100% + var(--name-gap) + .25em));}}
+@keyframes land{from{transform:scale(0);}}
+@keyframes blink{50%{opacity:0;}}
+@keyframes slide{from{opacity:0; transform:translateY(.6rem);}}
+
+/* Theme switch: the new palette is rolled down the page like ink.
+   Colour transitions are suspended meanwhile so the new state lands crisp; only the icon turns over (motion allowing). */
+.is-theming *, .is-theming *::before, .is-theming *::after{transition:none !important;}
+@media (prefers-reduced-motion:no-preference){
+  .is-theming .theme-toggle svg{transition:transform .7s var(--ease-io) !important;}
+}
+:root[data-vt="theme"]::view-transition-old(root){animation:none; mix-blend-mode:normal;}
+:root[data-vt="theme"]::view-transition-new(root){animation:roll .75s var(--ease-io) both; mix-blend-mode:normal;}
+:root[data-vt="lang"]::view-transition-old(root){animation-duration:.25s;}
+:root[data-vt="lang"]::view-transition-new(root){animation-duration:.35s;}
+@keyframes roll{from{clip-path:inset(0 0 100% 0);} to{clip-path:inset(0);}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; animation-delay:0s !important; animation-iteration-count:1 !important;
+    transition-duration:.001ms !important; transition-delay:0s !important; scroll-behavior:auto !important;}
+}
+
+/* ---------- 9. Print ------------------------------------------------- */
+@media print{
+  /* ink on white, whatever theme is saved or preferred */
+  :root[data-theme], :root:not([data-theme]){color-scheme:light; --bg:#fff; --ink:#000; --ink-2:#222; --muted:#555;
+    --rule:#999; --rule-strong:#000; --accent:#000; --halo:#fff; --plate:#fff; --fig:#333; --fig-2:#999;}
+  body::before, .site-head::before, .tools, .skip, .runhead, .index-count{display:none;}
+  .site-head{position:static;}
+  .name{text-shadow:none;}
+  .index-sec{display:block;}
+  .index-label{break-after:avoid;}
+  .entry{break-inside:avoid;}
+  /* the full stop, the mark, row rules, ticks and arrows are fills: print them even with background graphics off */
+  .stop, .gh-mark, .entry + .entry::before, .entry-num::after, .entry-arrow::before{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  .js-reveal .entry *{opacity:1 !important; transform:none !important;}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-<header>
-  <div>
-    <h1><span data-l="en">Vasily Buter</span><span data-l="ru">Василий Бутер</span></h1>
-    <p class="sub"><span data-l="en">Projects &amp; published pages.</span><span data-l="ru">Проекты и опубликованные страницы.</span></p>
-    <p class="gh"><a href="https://github.com/vabuter">github.com/vabuter</a></p>
-  </div>
-  <div class="tools">
-  <button class="theme-toggle lang-toggle" id="lang-toggle" type="button">RU</button>
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme">
-    <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-    <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-  </button>
+<a class="skip" href="#projects"><span data-l="en">Skip to projects</span><span data-l="ru">К проектам</span></a>
+
+<header class="site-head">
+  <div class="bar wrap">
+    <a class="gh" href="https://github.com/vabuter"><span class="gh-mark" aria-hidden="true"></span><span class="gh-text">github.com/vabuter</span><svg class="gh-arrow" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 9.5l7-7M4 2.5h5.5V8" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></a>
+    <span class="runhead" aria-hidden="true"><span data-l="en">Vasily Buter</span><span data-l="ru">Василий Бутер</span><span class="stop"></span></span>
+    <div class="tools">
+      <button class="tool lang-toggle" id="lang-toggle" type="button" aria-label="EN / RU — switch to Russian" title="Switch to Russian"><span class="lang-opt" data-c="en">EN</span><span class="lang-opt" data-c="ru">RU</span></button>
+      <button class="tool theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme" title="Switch theme"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.25"/><path d="M12 3.75a8.25 8.25 0 0 1 0 16.5z"/></svg></button>
+    </div>
   </div>
 </header>
 
-<p class="label"><span data-l="en">Projects</span><span data-l="ru">Проекты</span></p>
-<div class="cards">
-
-  <a class="card" href="https://vabuter.github.io/boins/">
-    <p class="card-title"><span data-l="en">Boins Book</span><span data-l="ru">Книга Boins</span> <span class="arrow">→</span></p>
-    <p class="card-desc">
-      <span data-l="en">The manual for Boins — a minimal, fast, S3-compatible blob storage for
-      the JVM. Bilingual (EN/RU): architecture, formats, deployment, recipes.</span>
-      <span data-l="ru">Руководство по Boins — минималистичное быстрое S3-совместимое хранилище
-      blob-объектов для JVM. На двух языках (EN/RU): архитектура, форматы, развёртывание, рецепты.</span></p>
-    <p class="card-url">vabuter.github.io/boins</p>
-  </a>
-
-  <a class="card" href="https://vabuter.github.io/neurodoc/">
-    <p class="card-title"><span data-l="en">Neurodoc Book</span><span data-l="ru">Книга Neurodoc</span> <span class="arrow">→</span></p>
-    <p class="card-desc">
-      <span data-l="en">The manual for Neurodoc — documentation as a knowledge graph of small text files
-      linked inline, and Neurodoc Editor for Windows, Linux and Android (RU).</span>
-      <span data-l="ru">Руководство по Neurodoc — документация как граф знаний из небольших текстовых
-      файлов со ссылками прямо в тексте, и редактор Neurodoc Editor для Windows, Linux и Android.</span></p>
-    <p class="card-url">vabuter.github.io/neurodoc</p>
-  </a>
-
-  <div class="card">
-    <p class="card-title"><a class="card-link" href="https://www.rustore.ru/catalog/app/org.timerrg">Timer RG</a> <span class="arrow">↗</span></p>
-    <p class="card-desc">
-      <span data-l="en">An interval timer for workouts at the gym and at home (Android). Nested loops and
-      repeats, voice cues, sound, vibration and a screen flash on every interval; keeps running with the
-      screen off. Free, no ads, no data collection.</span>
-      <span data-l="ru">Интервальный таймер для тренировок в зале и дома (Android). Вложенные циклы и повторы,
-      голосовые подсказки, звук, вибрация и вспышка экрана на каждом интервале; работает при выключенном
-      экране. Бесплатно, без рекламы и сбора данных.</span></p>
-    <p class="card-url">rustore.ru/catalog/app/org.timerrg</p>
-    <p class="card-store"><a href="https://vabuter.github.io/timer-rg-privacy-policy/"><span data-l="en">Privacy policy</span><span data-l="ru">Политика конфиденциальности</span> →</a></p>
+<main>
+  <div class="hero wrap">
+    <h1 class="name"><span data-l="en"><span class="w"><span class="wi">Vasily</span></span> <span class="w"><span class="wi">Buter<span class="stop" aria-hidden="true"></span></span></span></span><span data-l="ru"><span class="w"><span class="wi">Василий</span></span> <span class="w"><span class="wi">Бутер<span class="stop" aria-hidden="true"></span></span></span></span></h1>
+    <p class="sub"><span data-l="en">Projects &amp; published pages.</span><span data-l="ru">Проекты и&nbsp;опубликованные страницы.</span></p>
   </div>
 
-  <a class="card" href="https://vabuter.github.io/far2l-dark-theme/">
-    <p class="card-title"><span data-l="en">far2l Dark Theme — GNOME Graphite</span><span data-l="ru">Тёмная тема far2l — GNOME Graphite</span> <span class="arrow">→</span></p>
-    <p class="card-desc">
-      <span data-l="en">A very dark graphite theme for the far2l file manager in GNOME (libadwaita dark) colors:
-      interface, palette, syntax highlighting and icons. One installer for far2l 2.6.5+ on Debian, Fedora
-      and other distributions (RU).</span>
-      <span data-l="ru">Очень тёмная графитовая тема для файлового менеджера far2l в цветах GNOME: интерфейс,
-      палитра, подсветка синтаксиса и иконки. Один установщик для far2l 2.6.5+ в Debian, Fedora и других
-      дистрибутивах.</span></p>
-    <p class="card-url">vabuter.github.io/far2l-dark-theme</p>
-  </a>
+  <section id="projects" class="index-sec wrap" aria-labelledby="projects-title" tabindex="-1">
+  <h2 class="index-label" id="projects-title"><span data-l="en">Projects</span><span data-l="ru">Проекты</span></h2>
 
-  <a class="card" href="https://vabuter.github.io/win2nix/">
-    <p class="card-title">win2nix <span class="arrow">→</span></p>
-    <p class="card-desc">
-      <span data-l="en">A single-file Python command-line tool that turns text files from Windows into Linux
-      form: UTF-8, LF line endings, no BOM. Detects CP1251, CP866, KOI8-R and UTF-16 on its own and makes a
-      backup when in doubt (RU).</span>
-      <span data-l="ru">Утилита командной строки в одном файле на Python: приводит текстовые файлы из Windows
-      к виду Linux — UTF-8, переводы строк LF, без BOM. Сама определяет кодировку (CP1251, CP866, KOI8-R,
-      UTF-16), при сомнении делает резервную копию.</span></p>
-    <p class="card-url">vabuter.github.io/win2nix</p>
-  </a>
+  <!-- To add a project: copy one <li class="entry"> block, give it its own id and edit the text.
+       The figure (.entry-fig) is optional. Numbering and the total update themselves (CSS counters). -->
+  <ol class="index" role="list">
 
-  <a class="card" href="https://vabuter.github.io/gswitch-auto/">
-    <p class="card-title">gswitch-auto <span class="arrow">→</span></p>
-    <p class="card-desc">
-      <span data-l="en">A fork of gswitch for Linux that automatically fixes words typed in the wrong keyboard
-      layout, Punto Switcher style (<code>ghbdtn</code> → <code>привет</code>). GNOME, Fedora and Debian,
-      Wayland and Xorg (RU).</span>
-      <span data-l="ru">Форк gswitch для Linux, который автоматически исправляет слова, набранные не в той
-      раскладке, как Punto Switcher (<code>ghbdtn</code> → <code>привет</code>). GNOME, Fedora и Debian,
-      Wayland и Xorg.</span></p>
-    <p class="card-url">vabuter.github.io/gswitch-auto</p>
-  </a>
+    <li class="entry" id="boins">
+      <span class="entry-num" aria-hidden="true"></span>
+      <h3 class="entry-title"><a class="entry-link" href="https://vabuter.github.io/boins/"><span class="t"><span data-l="en">Boins Book</span><span data-l="ru">Книга Boins</span> <span class="chip" aria-hidden="true">EN/RU</span><span class="vh"><span data-l="en">(in English and Russian)</span><span data-l="ru">(на английском и русском)</span></span></span></a></h3>
+      <div class="entry-text"><p class="entry-desc"><span data-l="en">The manual for Boins&nbsp;— a minimal, fast, <span class="nw">S3-compatible</span> blob storage for the JVM. Bilingual <span class="nw">(EN/RU):</span> architecture, formats, deployment,&nbsp;recipes.</span><span data-l="ru">Руководство по&nbsp;Boins&nbsp;— минималистичное быстрое <span class="nw">S3-совместимое</span> хранилище <span class="nw">blob-объектов</span> для&nbsp;JVM. На&nbsp;двух языках <span class="nw">(EN/RU):</span> архитектура, форматы, развёртывание,&nbsp;рецепты.</span></p></div>
+      <dl class="entry-meta">
+        <div><dt><span data-l="en">Type</span><span data-l="ru">Тип</span></dt><dd><span data-l="en">Book</span><span data-l="ru">Книга</span></dd></div>
+        <div><dt><span data-l="en">Topic</span><span data-l="ru">Тематика</span></dt><dd><span class="vals"><span>S3</span> <span>JVM</span></span></dd></div>
+      </dl>
+      <p class="entry-url">vabuter.github.io/<b>boins</b></p>
+      <span class="entry-arrow" aria-hidden="true">→</span>
+      <span class="entry-fig" aria-hidden="true"><svg class="fig" viewBox="0 0 176 80" focusable="false">
+        <path d="M87.5 18.5C75 14 56 13 42.5 15.5v49c13.5-2.5 32.5-1.5 45 3zM88.5 18.5C101 14 120 13 133.5 15.5v49c-13.5-2.5-32.5-1.5-45 3z"/>
+        <path class="d" d="M50.5 25.5h28M50.5 31.5h24M50.5 37.5h28M50.5 43.5h20M50.5 49.5h26M50.5 55.5h16M97.5 52.5h28M97.5 58.5h18"/>
+        <path d="M97.5 24.5h8v8h-8zM109.5 24.5h8v8h-8zM97.5 36.5h8v8h-8zM109.5 36.5h8v8h-8zM121.5 36.5h8v8h-8z"/>
+        <rect class="a mv" x="121" y="24" width="9" height="9" style="--mv:translateY(-3px)"/>
+      </svg></span>
+    </li>
 
-</div>
+    <li class="entry" id="neurodoc">
+      <span class="entry-num" aria-hidden="true"></span>
+      <h3 class="entry-title"><a class="entry-link" href="https://vabuter.github.io/neurodoc/"><span class="t"><span data-l="en">Neurodoc Book <span class="chip" aria-hidden="true">RU</span><span class="vh">(in Russian)</span></span><span data-l="ru">Книга Neurodoc</span></span></a></h3>
+      <div class="entry-text"><p class="entry-desc"><span data-l="en">The manual for Neurodoc&nbsp;— documentation as a knowledge graph of small text files linked inline, and Neurodoc Editor for Windows, Linux and&nbsp;Android.</span><span data-l="ru">Руководство по&nbsp;Neurodoc&nbsp;— документация как граф знаний из&nbsp;небольших текстовых файлов со&nbsp;ссылками прямо в&nbsp;тексте, и&nbsp;редактор Neurodoc Editor для&nbsp;Windows, Linux и&nbsp;Android.</span></p></div>
+      <dl class="entry-meta">
+        <div><dt><span data-l="en">Type</span><span data-l="ru">Тип</span></dt><dd><span data-l="en">Book</span><span data-l="ru">Книга</span></dd></div>
+        <div><dt><span data-l="en">Editor</span><span data-l="ru">Редактор</span></dt><dd><span class="vals"><span>Windows</span> <span>Linux</span> <span>Android</span></span></dd></div>
+      </dl>
+      <p class="entry-url">vabuter.github.io/<b>neurodoc</b></p>
+      <span class="entry-arrow" aria-hidden="true">→</span>
+      <span class="entry-fig" aria-hidden="true"><svg class="fig" viewBox="0 0 176 80" focusable="false">
+        <path d="M77 40C57 40 56 15.5 36.5 15.5M77 40C60 40 64 63.5 46.5 63.5M99 40C120 40 118 15.5 139.5 15.5M99 40C122 40 120 55.5 143.5 55.5M88 47C88 56 110.5 53 110.5 62.5"/>
+        <path d="M14.5 8.5h22v14h-22zM24.5 56.5h22v14h-22zM139.5 8.5h22v14h-22zM143.5 48.5h22v14h-22zM99.5 62.5h22v14h-22z"/>
+        <path class="d" d="M18.5 13.5h12M18.5 17.5h8M28.5 61.5h12M28.5 65.5h8M143.5 13.5h12M143.5 17.5h8M147.5 53.5h12M147.5 57.5h8M103.5 67.5h12M103.5 71.5h8"/>
+        <g class="mv" style="--mv:scale(1.14)"><rect class="a" x="77" y="33" width="22" height="14"/><path class="ac" d="M81 38.5h12M81 42.5h8"/></g>
+      </svg></span>
+    </li>
 
-</div>
+    <li class="entry" id="timer-rg">
+      <span class="entry-num" aria-hidden="true"></span>
+      <h3 class="entry-title"><a class="entry-link" href="https://www.rustore.ru/catalog/app/org.timerrg"><span class="t">Timer RG</span></a></h3>
+      <div class="entry-text"><p class="entry-desc"><span data-l="en">An interval timer for workouts at the gym and at home (Android). Nested loops and repeats, voice cues, sound, vibration and a screen flash on every interval; keeps running with the screen off. Free, no ads, no data&nbsp;collection.</span><span data-l="ru">Интервальный таймер для&nbsp;тренировок в&nbsp;зале и&nbsp;дома (Android). Вложенные циклы и&nbsp;повторы, голосовые подсказки, звук, вибрация и&nbsp;вспышка экрана на&nbsp;каждом интервале; работает при&nbsp;выключенном экране. Бесплатно, без&nbsp;рекламы и&nbsp;сбора&nbsp;данных.</span></p>
+        <p class="entry-extra"><a class="entry-sub" href="https://vabuter.github.io/timer-rg-privacy-policy/"><span data-l="en">Privacy policy</span><span data-l="ru">Политика конфиденциальности</span><span class="sa" aria-hidden="true">→</span></a></p></div>
+      <dl class="entry-meta">
+        <div><dt><span data-l="en">Type</span><span data-l="ru">Тип</span></dt><dd><span data-l="en">App</span><span data-l="ru">Приложение</span></dd></div>
+        <div><dt><span data-l="en">Platform</span><span data-l="ru">Платформа</span></dt><dd>Android</dd></div>
+        <div><dt><span data-l="en">Store</span><span data-l="ru">Магазин</span></dt><dd>RuStore</dd></div>
+      </dl>
+      <p class="entry-url">rustore.ru/<wbr>catalog/<wbr>app/<wbr><b>org.timerrg</b></p>
+      <span class="entry-arrow ext" aria-hidden="true">↗</span>
+      <span class="entry-fig" aria-hidden="true"><svg class="fig" viewBox="0 0 176 80" focusable="false">
+        <path class="d" d="M40 8V4M56.75 10.99L58 8.82M69.01 23.25L71.18 22M72 40h4M69.01 56.75L71.18 58M56.75 69.01L58 71.18M40 72v4M23.25 69.01L22 71.18M10.99 56.75L8.82 58M8 40H4M10.99 23.25L8.82 22M23.25 10.99L22 8.82"/>
+        <circle class="d" cx="40" cy="40" r="28"/><circle class="d" cx="40" cy="40" r="19"/>
+        <path class="p" d="M40 21A19 19 0 0 1 49.5 56.45"/>
+        <g class="mv" style="--mv:rotate(30deg);transform-box:view-box;transform-origin:40px 40px"><path class="p" d="M40 12A28 28 0 1 1 15.75 54"/><rect class="a" x="12.25" y="50.5" width="7" height="7"/></g>
+        <path class="f" d="M88 46h18v8H88zM116 46h18v8h-18zM144 46h18v8h-18z"/>
+        <path d="M108.5 46.5h5v7h-5zM136.5 46.5h5v7h-5zM88.5 40.5v-4h25v4M116.5 40.5v-4h25v4M88.5 30.5v-4h73v4"/>
+      </svg></span>
+    </li>
+
+    <li class="entry" id="far2l-dark-theme">
+      <span class="entry-num" aria-hidden="true"></span>
+      <h3 class="entry-title"><a class="entry-link" href="https://vabuter.github.io/far2l-dark-theme/"><span class="t"><span data-l="en">far2l Dark Theme&nbsp;— GNOME Graphite <span class="chip" aria-hidden="true">RU</span><span class="vh">(in Russian)</span></span><span data-l="ru">Тёмная тема far2l&nbsp;— GNOME Graphite</span></span></a></h3>
+      <div class="entry-text"><p class="entry-desc"><span data-l="en">A very dark graphite theme for the far2l file manager in GNOME (libadwaita dark) colors: interface, palette, syntax highlighting and icons. One installer for <span class="nw">far2l 2.6.5+</span> on Debian, Fedora and other&nbsp;distributions.</span><span data-l="ru">Очень тёмная графитовая тема для&nbsp;файлового менеджера far2l в&nbsp;цветах GNOME: интерфейс, палитра, подсветка синтаксиса и&nbsp;иконки. Один установщик для&nbsp;<span class="nw">far2l 2.6.5+</span> в&nbsp;Debian, Fedora и&nbsp;других&nbsp;дистрибутивах.</span></p></div>
+      <dl class="entry-meta">
+        <div><dt><span data-l="en">Type</span><span data-l="ru">Тип</span></dt><dd><span data-l="en">Theme</span><span data-l="ru">Тема оформления</span></dd></div>
+        <div><dt><span data-l="en">Platform</span><span data-l="ru">Платформа</span></dt><dd>far2l 2.6.5+</dd></div>
+      </dl>
+      <p class="entry-url">vabuter.github.io/<wbr><b>far2l-dark-theme</b></p>
+      <span class="entry-arrow" aria-hidden="true">→</span>
+      <span class="entry-fig" aria-hidden="true"><svg class="fig" viewBox="0 0 176 80" focusable="false">
+        <rect class="win" x="24.5" y="6.5" width="127" height="67" rx="3"/>
+        <path class="wl" d="M24.5 15.5h127M29.5 19.5h56v44h-56zM90.5 19.5h56v44h-56z"/>
+        <circle class="wl" cx="145" cy="11" r="2"/>
+        <path class="wt" d="M76 11h24M33.5 25.5h30M33.5 30.5h40M33.5 40.5h22M33.5 45.5h36M33.5 50.5h28M33.5 55.5h18M94.5 25.5h34M94.5 30.5h24M94.5 35.5h40M94.5 40.5h20M94.5 45.5h30M94.5 50.5h26M29.5 68.5h9M41.5 68.5h9M53.5 68.5h9M65.5 68.5h9M77.5 68.5h9M89.5 68.5h9M101.5 68.5h9M113.5 68.5h9M125.5 68.5h9M137.5 68.5h9"/>
+        <g class="mv" style="--mv:translateY(5px)"><rect class="a" x="31" y="33" width="53" height="5"/><path class="aw" d="M33.5 35.5h26"/></g>
+      </svg></span>
+    </li>
+
+    <li class="entry" id="win2nix">
+      <span class="entry-num" aria-hidden="true"></span>
+      <h3 class="entry-title"><a class="entry-link" href="https://vabuter.github.io/win2nix/"><span class="t">win2nix<span data-l="en"> <span class="chip" aria-hidden="true">RU</span><span class="vh">(in Russian)</span></span></span></a></h3>
+      <div class="entry-text"><p class="entry-desc"><span data-l="en">A single-file Python command-line tool that turns text files from Windows into Linux form: <span class="nw">UTF-8,</span> LF line endings, no&nbsp;BOM. Detects CP1251, CP866, <span class="nw">KOI8-R</span> and <span class="nw">UTF-16</span> on its own and makes a backup when in&nbsp;doubt.</span><span data-l="ru">Утилита командной строки в&nbsp;одном файле на&nbsp;Python: приводит текстовые файлы из&nbsp;Windows к&nbsp;виду Linux&nbsp;— <span class="nw">UTF-8,</span> переводы строк LF, без&nbsp;BOM. Сама определяет кодировку (CP1251, CP866, <span class="nw">KOI8-R,</span> <span class="nw">UTF-16),</span> при&nbsp;сомнении делает резервную&nbsp;копию.</span></p></div>
+      <dl class="entry-meta">
+        <div><dt><span data-l="en">Type</span><span data-l="ru">Тип</span></dt><dd><span data-l="en">CLI tool</span><span data-l="ru">Утилита CLI</span></dd></div>
+        <div><dt><span data-l="en">Platform</span><span data-l="ru">Платформа</span></dt><dd>Python</dd></div>
+      </dl>
+      <p class="entry-url">vabuter.github.io/<b>win2nix</b></p>
+      <span class="entry-arrow" aria-hidden="true">→</span>
+      <span class="entry-fig" aria-hidden="true"><svg class="fig" viewBox="0 0 176 80" focusable="false">
+        <path d="M10.5 9.5h34v12h-34zM10.5 25.5h34v12h-34zM10.5 41.5h34v12h-34zM10.5 57.5h34v12h-34z"/>
+        <path class="d" d="M15.5 15.5h20M15.5 31.5h16M15.5 47.5h22M15.5 63.5h18"/>
+        <path d="M44.5 15.5C78 15.5 80 39.5 112 39.5M44.5 31.5C76 31.5 82 39.5 112 39.5M44.5 47.5C76 47.5 82 39.5 112 39.5M44.5 63.5C78 63.5 80 39.5 112 39.5h6"/>
+        <g class="mv" style="--mv:translateX(4px)"><rect class="a" x="118" y="31" width="48" height="17"/><path class="ac" d="M124 39.5h14M143 39.5h3M151 39.5h9"/></g>
+      </svg></span>
+    </li>
+
+    <li class="entry" id="gswitch-auto">
+      <span class="entry-num" aria-hidden="true"></span>
+      <h3 class="entry-title"><a class="entry-link" href="https://vabuter.github.io/gswitch-auto/"><span class="t">gswitch-auto<span data-l="en"> <span class="chip" aria-hidden="true">RU</span><span class="vh">(in Russian)</span></span></span></a></h3>
+      <div class="entry-text"><p class="entry-desc"><span data-l="en">A fork of gswitch for Linux that automatically fixes words typed in the wrong keyboard layout, Punto&nbsp;Switcher style <span class="nw">(<code>ghbdtn</code> → <code lang="ru">привет</code>).</span> GNOME, Fedora and Debian, Wayland and&nbsp;Xorg.</span><span data-l="ru">Форк gswitch для&nbsp;Linux, который автоматически исправляет слова, набранные не&nbsp;в&nbsp;той раскладке, как Punto&nbsp;Switcher <span class="nw">(<code>ghbdtn</code> → <code>привет</code>).</span> GNOME, Fedora и&nbsp;Debian, Wayland и&nbsp;Xorg.</span></p></div>
+      <dl class="entry-meta">
+        <div><dt><span data-l="en">Type</span><span data-l="ru">Тип</span></dt><dd><span data-l="en">Linux tool</span><span data-l="ru">Утилита Linux</span></dd></div>
+        <div><dt><span data-l="en">Platform</span><span data-l="ru">Платформа</span></dt><dd><span class="vals"><span>GNOME</span> <span>Wayland</span> <span>Xorg</span></span></dd></div>
+      </dl>
+      <p class="entry-url">vabuter.github.io/<b>gswitch-auto</b></p>
+      <span class="entry-arrow" aria-hidden="true">→</span>
+      <span class="entry-fig" aria-hidden="true"><svg class="fig" viewBox="0 0 176 80" focusable="false">
+        <rect x="24.5" y="8.5" width="18" height="17" rx="2"/><rect x="46.5" y="8.5" width="18" height="17" rx="2"/><rect x="68.5" y="8.5" width="18" height="17" rx="2"/><rect x="90.5" y="8.5" width="18" height="17" rx="2"/><rect x="112.5" y="8.5" width="18" height="17" rx="2"/><rect x="134.5" y="8.5" width="18" height="17" rx="2"/>
+        <path class="d" d="M28.5 13.5h4M50.5 13.5h4M72.5 13.5h4M94.5 13.5h4M116.5 13.5h4M138.5 13.5h4M34.5 20.5h4M56.5 20.5h4M78.5 20.5h4M100.5 20.5h4M122.5 20.5h4M144.5 20.5h4"/>
+        <path d="M24.5 44.5h127v25h-127zM31.5 53.5h4v8h-4zM37.5 53.5h4v8h-4zM43.5 53.5h4v8h-4zM49.5 53.5h4v8h-4zM55.5 53.5h4v8h-4zM61.5 53.5h4v8h-4zM73 57.5h12M81.5 54l3.5 3.5-3.5 3.5"/>
+        <path class="d" d="M28 57.5h41"/>
+        <path class="f" d="M92 53h4v9h-4zM98 53h4v9h-4zM104 53h4v9h-4zM110 53h4v9h-4zM116 53h4v9h-4zM122 53h4v9h-4z"/>
+        <rect class="a mv" x="129" y="51" width="6" height="13" style="--mv:translateX(6px)"/>
+      </svg></span>
+    </li>
+
+  </ol>
+  <span class="index-count" aria-hidden="true"></span>
+  </section>
+</main>
+
 <script>
   (function(){
-    var root=document.documentElement, btn=document.getElementById("theme-toggle");
-    var langBtn=document.getElementById("lang-toggle");
+    var doc=document, root=doc.documentElement;
+    var themeBtn=doc.getElementById("theme-toggle"), langBtn=doc.getElementById("lang-toggle");
     var UI={
-      en:{theme:"Switch theme",lang:"Switch language",to:"RU",title:"Vasily Buter — projects & pages"},
-      ru:{theme:"Сменить тему",lang:"Сменить язык",to:"EN",title:"Василий Бутер — проекты и страницы"}
+      en:{title:"Vasily Buter — projects & pages", lang:"EN / RU — switch to Russian", langTip:"Switch to Russian",
+          toLight:"Switch to light theme", toDark:"Switch to dark theme"},
+      ru:{title:"Василий Бутер — проекты и страницы", lang:"EN / RU — переключить на английский", langTip:"Переключить на английский",
+          toLight:"Включить светлую тему", toDark:"Включить тёмную тему"}
     };
-    function applyLang(l){
-      var ui=UI[l];
+    function mq(q){return window.matchMedia?window.matchMedia(q):{matches:false};}
+    var reduce=mq("(prefers-reduced-motion: reduce)"), osLight=mq("(prefers-color-scheme: light)");
+    /* The intended state lives here, so rapid clicks never read a DOM that a pending transition has not updated yet. */
+    var state={lang:root.getAttribute("data-lang")==="ru"?"ru":"en", theme:root.getAttribute("data-theme")};
+    function theme(){return state.theme||(osLight.matches?"light":"dark");}
+
+    /* Run a DOM change inside a View Transition when available and motion is welcome. */
+    var vtSeq=0;
+    function transition(kind,fn){
+      if(!doc.startViewTransition||reduce.matches){fn();return;}
+      var id=++vtSeq, ran=false;
+      function run(){if(!ran){ran=true;fn();}}
+      function done(){if(id===vtSeq)root.removeAttribute("data-vt");}
+      root.setAttribute("data-vt",kind);
+      try{
+        var vt=doc.startViewTransition(run);
+        vt.ready.catch(function(){});   /* skipped by a newer switch: nothing to animate */
+        vt.finished.then(done,done);
+        setTimeout(run,500);            /* watchdog: a busy page must still switch */
+      }catch(e){run();done();}
+    }
+    /* Add a state class for the duration of a switch (restarts cleanly on rapid clicks). */
+    var timers={};
+    function flag(cls,ms){
+      clearTimeout(timers[cls]);
+      root.classList.add(cls);
+      timers[cls]=setTimeout(function(){root.classList.remove(cls);},ms);
+    }
+
+    /* ---- theme: the label says what a press will do, in the current language ---- */
+    function syncThemeLabel(){
+      var ui=UI[state.lang], s=theme()==="light"?ui.toDark:ui.toLight;
+      themeBtn.setAttribute("aria-label",s); themeBtn.title=s;
+    }
+    function applyTheme(){
+      if(state.theme)root.setAttribute("data-theme",state.theme);
+      syncThemeLabel();
+    }
+    themeBtn.addEventListener("click",function(){
+      state.theme=theme()==="light"?"dark":"light";
+      try{localStorage.setItem("theme",state.theme);}catch(e){}
+      flag("is-theming",900);
+      transition("theme",applyTheme);
+    });
+    if(osLight.addEventListener)osLight.addEventListener("change",syncThemeLabel);
+
+    /* ---- language ---- */
+    function applyLang(){
+      var l=state.lang, ui=UI[l];
       root.setAttribute("data-lang",l);
       root.setAttribute("lang",l);
-      document.title=ui.title;
-      langBtn.textContent=ui.to;
-      langBtn.setAttribute("aria-label",ui.lang);
-      langBtn.title=ui.lang;
-      btn.setAttribute("aria-label",ui.theme);
-      btn.title=ui.theme;
+      doc.title=ui.title;
+      langBtn.setAttribute("aria-label",ui.lang);   /* contains the visible "EN / RU" */
+      langBtn.title=ui.langTip;
+      syncThemeLabel();
+      /* the other language has its own fit: drop the cap, the observer measures the new words */
+      if(nameEl)nameEl.style.removeProperty("--cap");
+      if(!window.ResizeObserver)queueFit();
     }
-    langBtn.addEventListener("click",function(){
-      var next=root.getAttribute("data-lang")==="ru" ? "en" : "ru";
-      applyLang(next);
-      try{localStorage.setItem("lang",next);}catch(e){}
-    });
-    applyLang(root.getAttribute("data-lang")==="ru" ? "ru" : "en");
-    function current(){
-      return root.getAttribute("data-theme") ||
-        (window.matchMedia("(prefers-color-scheme:light)").matches ? "light" : "dark");
+    /* Only a real pointer press on the active half is ignored. Keyboard and assistive tech always switch:
+       WebKit's AT press clicks whichever half lies at the button's centre, with detail 0 and no pointerdown. */
+    function activeHalf(t){
+      var seg=t&&t.closest?t.closest(".lang-opt"):null;
+      return !!seg&&seg.getAttribute("data-c")===state.lang;
     }
-    btn.addEventListener("click",function(){
-      var next=current()==="light" ? "dark" : "light";
-      root.setAttribute("data-theme",next);
-      try{localStorage.setItem("theme",next);}catch(e){}
+    var downOnActive=false;
+    langBtn.addEventListener("pointerdown",function(e){downOnActive=activeHalf(e.target);});
+    langBtn.addEventListener("click",function(e){
+      var inert=downOnActive&&e.detail>0&&activeHalf(e.target);
+      downOnActive=false;
+      if(inert)return;
+      state.lang=state.lang==="ru"?"en":"ru";
+      try{localStorage.setItem("lang",state.lang);}catch(err){}
+      entered();   /* the other language's name appears at rest */
+      flag("lang-anim",700);
+      transition("lang",applyLang);
     });
+
+    /* ---- fitted name: safety net ----
+       Plex and its metric-matched stand-ins always fit; an unknown fallback font might not, so measure
+       and scale down if needed. Re-measured whenever a word changes size (font swap, resize, language). */
+    var nameEl=doc.querySelector(".name");
+    function fitName(){
+      if(!nameEl)return;
+      /* one consistent reading: the rendered font size and the rendered words (no style toggling,
+         so it cannot oscillate); width per px of font size is a property of the font in use */
+      var fs=parseFloat(getComputedStyle(nameEl).fontSize), box=nameEl.getBoundingClientRect(), rs=[], tops=[];
+      /* x and width from the boxes (the entrance only moves words vertically); "same line" from offsetTop, which
+         ignores transforms, so a word that is still rising is not mistaken for a wrapped one */
+      Array.prototype.forEach.call(nameEl.querySelectorAll(".wi"),function(w){var r=w.getBoundingClientRect(); if(r.width){rs.push(r);tops.push(w.offsetTop);}});
+      if(!fs||!rs.length||!box.width)return;
+      var need=0, stacked=getComputedStyle(nameEl.querySelector(".w")).display==="block";
+      if(stacked)rs.forEach(function(r){need=Math.max(need,r.right-box.left);});
+      else{
+        need=rs[0].left-box.left;
+        rs.forEach(function(r,i){need+=r.width+(i?(Math.abs(tops[i]-tops[i-1])<1?r.left-rs[i-1].right:.3*fs):0);});
+      }
+      /* the largest size at which the name fits; CSS uses it only if it is smaller than the fitted size */
+      nameEl.style.setProperty("--cap",(box.width*fs/need*.995).toFixed(1)+"px");
+    }
+    var fitQueued=false;
+    function queueFit(){
+      if(fitQueued)return; fitQueued=true;
+      (window.requestAnimationFrame||setTimeout)(function(){fitQueued=false;fitName();});
+    }
+    if(nameEl&&window.ResizeObserver){
+      var ro=new ResizeObserver(queueFit);
+      ro.observe(nameEl);
+      Array.prototype.forEach.call(nameEl.querySelectorAll(".wi"),function(w){ro.observe(w);});
+    }else{
+      window.addEventListener("resize",queueFit);
+      try{if(doc.fonts&&doc.fonts.addEventListener)doc.fonts.addEventListener("loadingdone",queueFit);}catch(e){}
+    }
+    applyLang();
+
+    /* ---- masthead entrance: one-shot, over after the full stop's last blink (a timer as fallback) ---- */
+    function entered(){
+      if(root.classList.contains("is-entered"))return;
+      root.classList.add("is-entered");
+      queueFit();   /* second safeguard: measure once more at rest */
+    }
+    if(nameEl)nameEl.addEventListener("animationend",function(e){if(e.animationName==="blink")entered();});
+    setTimeout(entered,3600);
+
+    /* ---- running head: shown in the sticky bar once the big name has scrolled above the viewport ---- */
+    if(nameEl&&"IntersectionObserver" in window){
+      new IntersectionObserver(function(es){
+        var e=es[es.length-1];
+        root.classList.toggle("is-past-hero",!e.isIntersecting&&e.boundingClientRect.top<0);
+      }).observe(nameEl);
+    }
+
+    /* ---- one-shot reveal of index rows as they enter the viewport ---- */
+    var items=doc.querySelectorAll(".index > .entry");
+    if(/\bjs-reveal\b/.test(root.className)){
+      var show=function(el){el.classList.add("is-in");};
+      try{
+        var io=new IntersectionObserver(function(entries){
+          entries.forEach(function(e){if(e.isIntersecting){show(e.target);io.unobserve(e.target);}});
+        },{rootMargin:"0px 0px -6% 0px",threshold:0.08});
+        Array.prototype.forEach.call(items,function(el){io.observe(el);});
+        root.setAttribute("data-io","");
+        window.addEventListener("beforeprint",function(){Array.prototype.forEach.call(items,show);});
+      }catch(e){Array.prototype.forEach.call(items,show);}
+    }
   })();
 </script>
 </body>
